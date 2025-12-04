@@ -1,4 +1,4 @@
-package com.lexivo.routes;
+package com.lexivo.route;
 
 import com.lexivo.controllers.Controller;
 import com.lexivo.enums.UserRole;

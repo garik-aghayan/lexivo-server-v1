@@ -1,8 +1,9 @@
 package com.lexivo;
 
+import com.lexivo.controllers.AuthController;
 import com.lexivo.controllers.NotFoundController;
 import com.lexivo.enums.UserRole;
-import com.lexivo.routes.Route;
+import com.lexivo.route.Route;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class App {
 
             HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 
-            new Route(server, BASE_URL, NotFoundController.class, UserRole.PUBLIC);
+            initRoutes(server);
 
             server.setExecutor(null);
             server.start();
@@ -29,5 +30,10 @@ public class App {
 //			TODO: Replace with a proper logger
             System.err.println(ioe.getMessage());
         }
+    }
+
+    private static void initRoutes(HttpServer server) {
+        new Route(server, BASE_URL + "/auth", AuthController.class, UserRole.PUBLIC);
+        new Route(server, "/", NotFoundController.class, UserRole.PUBLIC);
     }
 }

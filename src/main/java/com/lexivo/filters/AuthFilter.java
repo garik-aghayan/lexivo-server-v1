@@ -1,13 +1,15 @@
 package com.lexivo.filters;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.lexivo.controllers.Controller;
 import com.lexivo.enums.UserRole;
 import com.lexivo.util.HttpResponseStatus;
+import com.lexivo.util.JwtUtil;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 public class AuthFilter extends Filter {
@@ -27,28 +29,31 @@ public class AuthFilter extends Filter {
 				return;
 			}
 			String token = authorization.getFirst().split(" ")[1];
-			// TODO: Check token validity
-			// TODO: Check ROLE
+			DecodedJWT decoded = JwtUtil.verifyJwtToken(token);
+			if (decoded == null) {
+				denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
+				return;
+			}
+			if (JwtUtil.isMinimumAllowedRole(decoded, minimumRole)) {
+				denyAccessResponse(exchange, HttpResponseStatus.FORBIDDEN);
+				return;
+			}
 		}
 		chain.doFilter(exchange);
 	}
 
 	@Override
 	public String description() {
-		return "Checks if the user has authorization to access the endpoint";
+		return "Checks if the user is allowed to access the endpoint";
 	}
 
 	private void denyAccessResponse(HttpExchange exchange, int responseCode) {
 		try {
-			exchange.sendResponseHeaders(responseCode, 0);
-			OutputStream os = exchange.getResponseBody();
-			os.write(new byte[]{});
-			os.close();
+			Controller.sendJsonResponse(exchange, responseCode, "");
 		}
 		catch (IOException ioe) {
 			// TODO: Replace with a proper logger
 			System.err.println(ioe.getMessage());
 		}
 	}
-
 }
