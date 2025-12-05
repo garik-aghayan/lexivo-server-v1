@@ -21,23 +21,21 @@ public class AuthFilter extends Filter {
 
 	@Override
 	public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-		if (minimumRole != UserRole.PUBLIC) {
-			Headers headers = exchange.getRequestHeaders();
-			List<String> authorization = headers.get("Authorization");
-			if (authorization == null || authorization.size() != 1) {
-				denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
-				return;
-			}
-			String token = authorization.getFirst().split(" ")[1];
-			DecodedJWT decoded = JwtUtil.verifyJwtToken(token);
-			if (decoded == null) {
-				denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
-				return;
-			}
-			if (JwtUtil.isMinimumAllowedRole(decoded, minimumRole)) {
-				denyAccessResponse(exchange, HttpResponseStatus.FORBIDDEN);
-				return;
-			}
+		Headers headers = exchange.getRequestHeaders();
+		List<String> authorization = headers.get("Authorization");
+		if (authorization == null || authorization.size() != 1) {
+			denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
+			return;
+		}
+		String token = authorization.getFirst().split(" ")[1];
+		DecodedJWT decoded = JwtUtil.verifyJwtToken(token);
+		if (decoded == null) {
+			denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
+			return;
+		}
+		if (JwtUtil.isMinimumAllowedRole(decoded, minimumRole)) {
+			denyAccessResponse(exchange, HttpResponseStatus.FORBIDDEN);
+			return;
 		}
 		chain.doFilter(exchange);
 	}

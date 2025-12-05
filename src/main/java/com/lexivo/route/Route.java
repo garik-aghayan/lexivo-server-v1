@@ -2,14 +2,16 @@ package com.lexivo.route;
 
 import com.lexivo.controllers.Controller;
 import com.lexivo.enums.UserRole;
-import com.lexivo.filters.AuthFilter;
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpServer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Route {
-	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass, UserRole minimumRole) {
+	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass, List<? extends Filter> filters) {
 		try {
 			Constructor<? extends Controller> controllerConstructor = controllerClass.getConstructor(String.class);
 			Controller controller = controllerConstructor.newInstance(basePath);
@@ -17,12 +19,18 @@ public class Route {
 			var context1 = server.createContext(basePath, controller);
 			var context2 = server.createContext(context1.getPath() + "/", controller);
 
-			context1.getFilters().add(new AuthFilter(minimumRole));
-			context2.getFilters().add(new AuthFilter(minimumRole));
+			for (var filter : filters) {
+				context1.getFilters().add(filter);
+				context2.getFilters().add(filter);
+			}
 		}
 		catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			// TODO: Replace with a proper logger
 			System.err.println(e.getMessage());
 		}
+	}
+
+	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass) {
+		this(server, basePath, controllerClass, new ArrayList<>());
 	}
 }

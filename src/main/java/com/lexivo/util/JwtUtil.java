@@ -12,21 +12,29 @@ import java.time.Instant;
 public abstract class JwtUtil {
 	public static final String KEY_ACCESS_TOKEN = "accessToken";
 	public static final String KEY_REFRESH_TOKEN = "refreshToken";
-	public static final String CLAIM_USERNAME = "username";
+	public static final String CLAIM_EMAIL = "email";
 	public static final String CLAIM_ROLE = "role";
 	private static final String KEY_JWT_SECRET = "JWT_SECRET";
-	public static String createHMAC256Token(String username, UserRole role, long validMinutes) {
+	public static String createHMAC256Token(String email, UserRole role, long validMinutes) {
 		return JWT.create()
-				.withClaim(CLAIM_USERNAME, username)
+				.withClaim(CLAIM_EMAIL, email)
 				.withClaim(CLAIM_ROLE, role.toString())
 				.withExpiresAt(Instant.now().plusSeconds(TimeUtil.getSecondsInMinutes(validMinutes)))
 				.sign(Algorithm.HMAC256(System.getenv(KEY_JWT_SECRET)));
 	}
 
+	public static String createAccessToken(String email) {
+		return JwtUtil.createHMAC256Token(email, UserRole.USER, 5);
+	}
+
+	public static String createRefreshToken(String email) {
+		return JwtUtil.createHMAC256Token(email, UserRole.USER, TimeUtil.getMinutesInDays(7));
+	}
+
 	public static DecodedJWT verifyJwtToken(String jwtToken) {
 		try {
 			JWTVerifier verifier = JWT.require(Algorithm.HMAC256(System.getenv(KEY_JWT_SECRET)))
-					.withClaimPresence(CLAIM_USERNAME)
+					.withClaimPresence(CLAIM_EMAIL)
 					.withClaimPresence(CLAIM_ROLE)
 					.build();
 			return verifier.verify(jwtToken);

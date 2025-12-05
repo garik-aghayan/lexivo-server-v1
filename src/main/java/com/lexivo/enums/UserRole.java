@@ -6,14 +6,10 @@ public enum UserRole {
 	ADMIN;
 
 	public static UserRole fromString(String s) {
-		return switch (s) {
-			case "USER" -> USER;
-			case "ADMIN" -> ADMIN;
-			default -> PUBLIC;
-		};
+		return "ADMIN".equals(s) ? ADMIN : USER;
 	}
 
 	public boolean isMinimumAllowed(UserRole minimumAllowed) {
-		return minimumAllowed == PUBLIC || this == minimumAllowed || this == ADMIN;
+		return this == minimumAllowed || this == ADMIN;
 	}
 }
