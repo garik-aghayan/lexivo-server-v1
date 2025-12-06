@@ -5,7 +5,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public abstract class Db {
-	private static final DbUser user = new DbUser();
+	private static final TableUsers users = new TableUsers();
+	private static final TableEmailConfirmationCodes emailConfirmationCodes = new TableEmailConfirmationCodes();
 	public static Connection getDbConnection() throws SQLException {
 		final String url = System.getenv("DB_URL");
 		final String user = System.getenv("DB_USER");
@@ -33,7 +34,11 @@ public abstract class Db {
 		}
 	}
 
-	public static DbUser user() {
-		return user;
+	public static TableUsers users() {
+		return users;
+	}
+
+	public static TableEmailConfirmationCodes emailConfirmationCodes() {
+		return emailConfirmationCodes;
 	}
 }

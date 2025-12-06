@@ -61,11 +61,11 @@ public abstract class Controller implements HttpHandler {
 		sendJsonResponse(exchange, responseCode, JsonUtil.toJson(Map.of("message", messages)));
 	}
 
-	protected void sendRouteDoesNotExistResponse(HttpExchange exchange) throws IOException {
+	public void sendRouteDoesNotExistResponse(HttpExchange exchange) throws IOException {
 		sendNotFoundResponse(exchange, "Route does not exist");
 	}
 
-	protected void sendNotFoundResponse(HttpExchange exchange, String... responseMessageList) throws IOException {
+	public void sendNotFoundResponse(HttpExchange exchange, String... responseMessageList) throws IOException {
 		sendResponseWithMessage(exchange, HttpResponseStatus.NOT_FOUND, responseMessageList);
 	}
 

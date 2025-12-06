@@ -1,6 +1,7 @@
 package com.lexivo.controllers;
 
 import com.lexivo.db.Db;
+import com.lexivo.schema.EmailConfirmationCodeData;
 import com.lexivo.schema.User;
 import com.lexivo.util.*;
 import com.sun.net.httpserver.HttpExchange;
@@ -8,15 +9,11 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AuthController extends Controller {
-	private static final Map<String, List<Long>> emailConfirmationCodeMap = new HashMap<>();
-	private final int emailConfirmationCodeValidDurationMs = 10 * 60 * 1000;
-	private final String messageConfirmEmail = "Confirm your email within 10 minutes";
 
 	public AuthController(String routeBasePath) {
 		super(routeBasePath);
@@ -40,6 +37,11 @@ public class AuthController extends Controller {
 			return;
 		}
 
+		if (pathsEqual(routeBasePath + "/recover_password", path)) {
+			recoverPassword(exchange);
+			return;
+		}
+
 		sendRouteDoesNotExistResponse(exchange);
 	}
 
@@ -49,9 +51,10 @@ public class AuthController extends Controller {
 		if (requestBody == null) return;
 
 		String email = requestBody.getEmail();
+		email = email == null ? null : email.trim();
 		String password = requestBody.getPassword();
 
-		User user = Db.user().getByEmail(email);
+		User user = Db.users().getByEmail(email);
 		if (user == null) {
 			sendBadRequestResponse(exchange, "Incorrect credentials");
 			return;
@@ -68,15 +71,7 @@ public class AuthController extends Controller {
 		}
 
 		if (!user.isConfirmed()) {
-			emailConfirmationCodeMap.put(email, Randomizer.getEmailConfirmationNumberAndDateList());
-			boolean sent = Email.sendConfirmationCode(email, emailConfirmationCodeMap.get(email).getFirst().toString());
-
-			if (!sent) {
-				sendServerSideErrorResponse(exchange);
-				return;
-			}
-
-			sendOkWithMessage(exchange, messageConfirmEmail);
+			sendConfirmationCodeEmail(exchange, user, HttpResponseStatus.FORBIDDEN);
 			return;
 		}
 
@@ -95,7 +90,7 @@ public class AuthController extends Controller {
 		String email = requestBody.getEmail();
 		String password = requestBody.getPassword();
 
-		User user = Db.user().getByEmail(email);
+		User user = Db.users().getByEmail(email);
 		if (user != null) {
 			sendBadRequestResponse(exchange, "User with the given email already exists");
 			return;
@@ -108,70 +103,59 @@ public class AuthController extends Controller {
 		}
 
 		String passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-
-		boolean success = Db.user().addUser(new User(email, name, passwordHash, false));
+		User newUser = new User(email, name, passwordHash, false);
+		boolean success = Db.users().addUser(newUser);
 
 		if (!success) {
 			sendServerSideErrorResponse(exchange);
 			return;
 		}
 
-
-		emailConfirmationCodeMap.put(email, Randomizer.getEmailConfirmationNumberAndDateList());
-
-		boolean sent = Email.sendConfirmationCode(email, emailConfirmationCodeMap.get(email).getFirst().toString());
-
-		if (!sent) {
-			sendServerSideErrorResponse(exchange);
-			return;
-		}
-
-		sendOkWithMessage(exchange, messageConfirmEmail);
+		sendConfirmationCodeEmail(exchange, newUser, HttpResponseStatus.OK);
 	}
 
 	private void confirmEmail(HttpExchange exchange) throws IOException, SQLException {
-		removeRedundantEmailConfirmationCodeMapEntries();
-
 		@SuppressWarnings("unchecked")
 		Map<String, ?> requestBody = RequestDataCheck.getCheckedRequestBody(exchange, List.of("email", "confirmation_code"), Map.class);
 
 		if (requestBody == null) return;
-
 		String email = (String) requestBody.get("email");
-		double confirmationCode = (double) requestBody.get("confirmation_code");
+		String confirmationCode = (String) requestBody.get("confirmation_code");
 
-		List<Long> emailConfirmationCodeAndDate = emailConfirmationCodeMap.get(email);
-		long now = Instant.now().toEpochMilli();
+		EmailConfirmationCodeData entry = Db.emailConfirmationCodes().getByEmail(email);
+		long now = System.currentTimeMillis();
 
-		if (emailConfirmationCodeAndDate == null || emailConfirmationCodeAndDate.getFirst() != confirmationCode || now - emailConfirmationCodeAndDate.getLast() > emailConfirmationCodeValidDurationMs) {
+		if (entry == null || !entry.getCode().equals(confirmationCode) || now > entry.getExpiresAt()) {
 			sendBadRequestResponse(exchange, "Wrong confirmation code");
 			return;
 		}
 
-		boolean success = Db.user().confirmUser(email);
+		boolean success = Db.users().confirmUser(email);
 		if(!success) {
 			sendServerSideErrorResponse(exchange);
 			return;
 		}
 
-		emailConfirmationCodeMap.remove(email);
+		Db.emailConfirmationCodes().deleteWhereEmail(email);
 
 		sendJsonResponse(exchange, HttpResponseStatus.OK, JsonUtil.toJson(Map.of("message", "User email successfully confirmed")));
 	}
 
-	private void recoverPassword() throws IOException, SQLException {
+	private void recoverPassword(HttpExchange exchange) throws IOException, SQLException {
 //		TODO:
+		sendRouteDoesNotExistResponse(exchange);
 	}
 
-	private void removeRedundantEmailConfirmationCodeMapEntries() {
-		if (emailConfirmationCodeMap.size() < 10) return;
+	private void sendConfirmationCodeEmail(HttpExchange exchange, User user, int responseCode) throws SQLException, IOException {
+		EmailConfirmationCodeData codeData = new EmailConfirmationCodeData(user.getEmail(), Randomizer.getEmailConfirmationCode());
+		boolean success = Db.emailConfirmationCodes().addConfirmationCode(codeData);
+		if (!success) {
+			sendServerSideErrorResponse(exchange);
+			return;
+		};
 
-		long now = Instant.now().toEpochMilli();
+		Email.sendConfirmationCode(user.getEmail(), codeData.getCode());
 
-		for (var key : emailConfirmationCodeMap.keySet()) {
-			if (now - emailConfirmationCodeMap.get(key).getLast() > emailConfirmationCodeValidDurationMs) {
-				emailConfirmationCodeMap.remove(key);
-			}
-		}
+		sendResponseWithMessage(exchange, responseCode, "Confirm your email within 10 minutes");
 	}
 }

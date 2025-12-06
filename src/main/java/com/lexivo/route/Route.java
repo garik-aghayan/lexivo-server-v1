@@ -1,7 +1,7 @@
 package com.lexivo.route;
 
 import com.lexivo.controllers.Controller;
-import com.lexivo.enums.UserRole;
+import com.lexivo.filters.RateLimiter;
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpServer;
 
@@ -23,6 +23,9 @@ public class Route {
 				context1.getFilters().add(filter);
 				context2.getFilters().add(filter);
 			}
+
+			context1.getFilters().add(new RateLimiter());
+			context2.getFilters().add(new RateLimiter());
 		}
 		catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
 			// TODO: Replace with a proper logger

@@ -51,12 +51,6 @@ public abstract class RequestDataCheck {
 	}
 
 	public static boolean doesPasswordMeetRequirements(String password) {
-//		TODO: Add checks
-		// length 8-32
-		// upper case
-		// lower case
-		// number
-
-		return true;
+		return password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,32}$");
 	}
 }

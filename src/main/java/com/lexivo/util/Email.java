@@ -46,18 +46,18 @@ public abstract class Email {
 		}
 	}
 
-	public static boolean sendConfirmationCode(String recipientEmail, String confirmationCode) {
+	public static void sendConfirmationCode(String recipientEmail, String confirmationCode) {
 		String htmlBody = """
 		<div style="padding: 50px;">
 			<p style="text-align: center; font-size: 20px; font-weight: bold;">Confirmation code</p>
 			<div style="padding: 10px; background-color: #f9f9f9;">
-				<p style="text-align: center; font-size: 20px; font-weight: bold;">%</p>
+				<p style="text-align: center; font-size: 20px; font-weight: bold; letter-spacing: 3px;">%</p>
 			</div>
 		</div>
 		""";
 
 		htmlBody = htmlBody.replace("%", confirmationCode);
 
-		return sendTo(recipientEmail, "Email confirmation", htmlBody);
+		sendTo(recipientEmail, "Email confirmation", htmlBody);
 	}
 }

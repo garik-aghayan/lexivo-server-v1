@@ -1,13 +1,11 @@
 package com.lexivo.util;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Random;
+import java.security.SecureRandom;
 
 public abstract class Randomizer {
-	public static List<Long> getEmailConfirmationNumberAndDateList() {
-		Random random = new Random();
+	public static String getEmailConfirmationCode() {
+		SecureRandom random = new SecureRandom();
 		int origin = 1_000_000;
-		return List.of((long)random.nextInt(origin, origin * 10), Instant.now().toEpochMilli());
+		return String.valueOf(random.nextInt(origin, origin * 10));
 	}
 }

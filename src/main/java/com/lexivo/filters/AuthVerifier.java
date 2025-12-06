@@ -12,10 +12,10 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.util.List;
 
-public class AuthFilter extends Filter {
+public class AuthVerifier extends Filter {
 	private final UserRole minimumRole;
 
-	public AuthFilter(UserRole minimumRole) {
+	public AuthVerifier(UserRole minimumRole) {
 		this.minimumRole = minimumRole;
 	}
 

@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DbUser {
+public class TableUsers {
 	private static final String COL_NAME = "name";
 	private static final String COL_EMAIL = "email";
 	private static final String COL_PASS_HASH = "password_hash";

@@ -11,4 +11,11 @@ CREATE TABLE IF NOT EXISTS users(
     confirmed BOOLEAN NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS email_confirmation_codes(
+    email SHORT_TEXT PRIMARY KEY,
+    code CHAR(7) NOT NULL,
+    created_at BIGINT NOT NULL,
+    expires_at BIGINT NOT NULL
+);
+
 COMMIT;
