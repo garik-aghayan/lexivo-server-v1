@@ -6,6 +6,7 @@ import com.lexivo.util.DateAndTime;
 import com.lexivo.util.Email;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 public class Log {
@@ -67,8 +68,8 @@ public class Log {
 		createLog(Category.INFO, userEmail, messages);
 	}
 
-	public static void info(List<String> messages) {
-		info(null, messages);
+	public static void info(String... messages) {
+		info(null, Arrays.stream(messages).toList());
 	}
 
 	public static void newUser(String userEmail, List<String> messages) {
@@ -79,8 +80,8 @@ public class Log {
 		createLog(Category.EXCEPTION, userEmail, messages);
 	}
 
-	public static void exception(List<String> messages) {
-		exception(null, messages);
+	public static void exception(String... messages) {
+		exception(null, Arrays.stream(messages).toList());
 	}
 
 	public enum Category {

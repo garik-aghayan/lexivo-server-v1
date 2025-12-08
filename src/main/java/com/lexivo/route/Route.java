@@ -8,11 +8,9 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Route {
-	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass, List<? extends Filter> filters) {
+	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass, Filter[] filters) {
 		try {
 			Constructor<? extends Controller> controllerConstructor = controllerClass.getConstructor(String.class);
 			Controller controller = controllerConstructor.newInstance(basePath);
@@ -29,11 +27,11 @@ public class Route {
 			context2.getFilters().add(new RateLimiter());
 		}
 		catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-			Log.exception(List.of("Exception in route.Route", e.getClass().getName(), e.getMessage()));
+			Log.exception("Exception in route.Route", e.getClass().getName(), e.getMessage());
 		}
 	}
 
 	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass) {
-		this(server, basePath, controllerClass, new ArrayList<>());
+		this(server, basePath, controllerClass, new Filter[]{});
 	}
 }

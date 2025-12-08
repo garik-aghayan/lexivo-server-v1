@@ -8,7 +8,6 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.List;
 
 public class App {
     public static final String BASE_URL = "/api/v1";
@@ -26,10 +25,10 @@ public class App {
 
             server.start();
 
-            Log.info(List.of("Server running on port " + PORT));
+            Log.info("Server running on port " + PORT);
         }
         catch (Exception e) {
-            Log.exception(List.of("Exception in App", Arrays.stream(e.getStackTrace()).toList().toString(), e.getMessage()));
+            Log.exception("Exception in App", Arrays.stream(e.getStackTrace()).toList().toString(), e.getMessage());
         }
 	}
 
