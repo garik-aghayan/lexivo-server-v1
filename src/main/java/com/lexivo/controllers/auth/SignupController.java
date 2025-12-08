@@ -5,7 +5,7 @@ import com.lexivo.db.Db;
 import com.lexivo.schema.Log;
 import com.lexivo.schema.User;
 import com.lexivo.util.HttpResponseStatus;
-import com.lexivo.util.RequestDataCheck;
+import com.lexivo.util.RequestData;
 import com.sun.net.httpserver.HttpExchange;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -20,7 +20,7 @@ public class SignupController extends Controller {
 
 	@Override
 	protected void post(HttpExchange exchange) throws IOException, SQLException {
-		User requestBody = RequestDataCheck.getCheckedRequestBody(exchange, List.of("name", "email", "password"), User.class);
+		User requestBody = RequestData.getCheckedRequestBody(exchange, List.of("name", "email", "password"), User.class);
 		if (requestBody == null) return;
 
 		String name = requestBody.getName();
@@ -33,9 +33,9 @@ public class SignupController extends Controller {
 			return;
 		}
 
-		boolean passwordMeetsRequirements = RequestDataCheck.doesPasswordMeetRequirements(password);
+		boolean passwordMeetsRequirements = RequestData.doesPasswordMeetRequirements(password);
 		if (!passwordMeetsRequirements) {
-			sendBadRequestResponse(exchange, "Password must have", "8-32 characters", "at least one upper case letter", "at least on lower case letter", "at least one number");
+			sendBadRequestResponse(exchange, RequestData.PASSWORD_REQUIREMENTS);
 			return;
 		}
 

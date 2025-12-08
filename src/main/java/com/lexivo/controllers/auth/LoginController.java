@@ -7,7 +7,7 @@ import com.lexivo.schema.User;
 import com.lexivo.util.HttpResponseStatus;
 import com.lexivo.util.JsonUtil;
 import com.lexivo.util.JwtUtil;
-import com.lexivo.util.RequestDataCheck;
+import com.lexivo.util.RequestData;
 import com.sun.net.httpserver.HttpExchange;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -26,7 +26,7 @@ public class LoginController extends Controller {
 
 	@Override
 	protected void post(HttpExchange exchange) throws IOException {
-		User requestBody = RequestDataCheck.getCheckedRequestBody(exchange, List.of("email", "password"), User.class);
+		User requestBody = RequestData.getCheckedRequestBody(exchange, List.of("email", "password"), User.class);
 
 		if (requestBody == null) return;
 
@@ -34,22 +34,26 @@ public class LoginController extends Controller {
 		email = email == null ? null : email.trim();
 		String password = requestBody.getPassword();
 
-		if (!userLoginCheckSuccessful(exchange, email, password)) return;
+		User user = userLoginCheckSuccessful(exchange, email, password);
+
+		if (user == null) return;
 
 		if (role == UserRole.ADMIN && !adminLoginCheckSuccessful(exchange, requestBody.getAdminPassword())) return;
 
 		Map<String, String> jsonMap = new HashMap<>();
-		jsonMap.put(JwtUtil.KEY_ACCESS_TOKEN, JwtUtil.createAccessToken(email));
-		jsonMap.put(JwtUtil.KEY_REFRESH_TOKEN, JwtUtil.createRefreshToken(email));
+		jsonMap.put(JwtUtil.KEY_ACCESS_TOKEN, JwtUtil.createAccessToken(email, role));
+		jsonMap.put(JwtUtil.KEY_REFRESH_TOKEN, JwtUtil.createRefreshToken(email, role));
+		jsonMap.put("email", user.getEmail());
+		jsonMap.put("name", user.getName());
 
 		sendJsonResponse(exchange, HttpResponseStatus.OK, JsonUtil.toJson(jsonMap));
 	}
 
-	private boolean userLoginCheckSuccessful(HttpExchange exchange, String email, String password) throws IOException {
+	public static User userLoginCheckSuccessful(HttpExchange exchange, String email, String password) throws IOException {
 		User user = Db.users().getByEmail(email);
 		if (user == null) {
 			sendIncorrectCredentialsResponse(exchange);
-			return false;
+			return null;
 		}
 
 		boolean passwordCorrect = false;
@@ -59,15 +63,15 @@ public class LoginController extends Controller {
 
 		if (!passwordCorrect) {
 			sendIncorrectCredentialsResponse(exchange);
-			return false;
+			return null;
 		}
 
 		if (!user.isConfirmed()) {
 			sendConfirmationCodeEmailAndResponse(exchange, user, HttpResponseStatus.FORBIDDEN);
-			return false;
+			return null;
 		}
 
-		return true;
+		return user;
 	}
 
 	private boolean adminLoginCheckSuccessful(HttpExchange exchange, String adminPassword) throws IOException {
@@ -84,7 +88,7 @@ public class LoginController extends Controller {
 		return true;
 	}
 
-	private void sendIncorrectCredentialsResponse(HttpExchange exchange) throws IOException {
+	private static void sendIncorrectCredentialsResponse(HttpExchange exchange) throws IOException {
 		sendBadRequestResponse(exchange, "Incorrect credentials");
 	}
 }

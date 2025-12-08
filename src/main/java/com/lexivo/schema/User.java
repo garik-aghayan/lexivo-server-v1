@@ -7,6 +7,7 @@ public class User {
 	private boolean confirmed;
 	private String password;
 	private String adminPassword;
+	private String newPassword;
 	private String refreshToken;
 
 	public User(String email, String name, String passwordHash, boolean confirmed) {
@@ -61,6 +62,14 @@ public class User {
 
 	public void setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
+	}
+
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
 	}
 
 	public String getRefreshToken() {

@@ -10,12 +10,14 @@ public class UserRoute implements RouteWithServer {
 	private final String confirmEmailPath;
 	private final String recoverPasswordPath;
 	private final String changePasswordPath;
+	private final String changeUserNamePath;
 
 	public UserRoute(String basePath) {
 		basePath = basePath + "/user";
 		this.confirmEmailPath = basePath + "/confirm_email";
 		this.recoverPasswordPath = basePath + "/recover_password";
 		this.changePasswordPath = basePath + "/change_password";
+		this.changeUserNamePath = basePath + "/change_name";
 	}
 
 	@Override
@@ -23,5 +25,6 @@ public class UserRoute implements RouteWithServer {
 		new Route(server, confirmEmailPath, UserController.confirmEmail(confirmEmailPath).getClass());
 		new Route(server, recoverPasswordPath, UserController.recoverPassword(recoverPasswordPath).getClass());
 		new Route(server, changePasswordPath, UserController.changePassword(changePasswordPath).getClass(), new Filter[]{new AuthVerifier(UserRole.USER)});
+		new Route(server, changeUserNamePath, UserController.changeName(changeUserNamePath).getClass(), new Filter[]{new AuthVerifier(UserRole.USER)});
 	}
 }

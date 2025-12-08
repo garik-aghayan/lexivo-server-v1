@@ -61,7 +61,7 @@ public abstract class Controller implements HttpHandler {
 		sendNotFoundResponse(exchange);
 	}
 
-	protected void sendConfirmationCodeEmailAndResponse(HttpExchange exchange, User user, int responseCode) throws IOException {
+	protected static void sendConfirmationCodeEmailAndResponse(HttpExchange exchange, User user, int responseCode) throws IOException {
 		EmailConfirmationCodeData codeData = new EmailConfirmationCodeData(user.getEmail(), Randomizer.getEmailConfirmationCode());
 		boolean success = Db.emailConfirmationCodes().addConfirmationCode(codeData);
 		if (!success) {
@@ -106,8 +106,12 @@ public abstract class Controller implements HttpHandler {
 		sendResponseWithMessage(exchange, HttpResponseStatus.BAD_REQUEST, messages);
 	}
 
-	public static void sendOkWithMessage(HttpExchange exchange, String message) throws IOException {
-		sendJsonResponse(exchange, HttpResponseStatus.OK, JsonUtil.toJson(Map.of("message", message)));
+	public static void sendOkResponse(HttpExchange exchange) throws IOException {
+		sendJsonResponse(exchange, HttpResponseStatus.OK, "");
+	}
+
+	public static void sendOkResponse(HttpExchange exchange, String... responseMessageList) throws IOException {
+		sendResponseWithMessage(exchange, HttpResponseStatus.OK, responseMessageList);
 	}
 
 

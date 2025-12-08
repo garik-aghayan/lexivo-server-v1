@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class RequestDataCheck {
+public abstract class RequestData {
+	public static final String[] PASSWORD_REQUIREMENTS = {"Password must have", "8-32 characters", "at least one upper case letter", "at least on lower case letter", "at least one number"};
 	private static String getRequestBodyString(HttpExchange exchange) throws IOException {
 		InputStream requestBodyStream = exchange.getRequestBody();
 		return new String(requestBodyStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -52,5 +53,12 @@ public abstract class RequestDataCheck {
 
 	public static boolean doesPasswordMeetRequirements(String password) {
 		return password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,32}$");
+	}
+
+	public static String getAttributeString(HttpExchange exchange, String name) {
+		Object attr = exchange.getAttribute(name);
+		if (attr == null) return null;
+
+		return attr.toString().replace("\"", "");
 	}
 }

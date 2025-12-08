@@ -26,7 +26,7 @@ public class TableUsers {
 				String eml = resultSet.getString(COL_EMAIL);
 				String pass_hash = resultSet.getString(COL_PASS_HASH);
 				boolean confirmed = resultSet.getBoolean(COL_CONFIRMED);
-				return new User(name, eml, pass_hash, confirmed);
+				return new User(eml, name, pass_hash, confirmed);
 			}
 		}
 		catch (SQLException sqle) {
@@ -76,6 +76,21 @@ public class TableUsers {
 			}
 			catch (SQLException sqle) {
 				Log.exception(email, List.of("SQL Exception in TableUsers.updateUserPassword", sqle.getMessage()));
+			}
+		}));
+		return success[0];
+	}
+
+	public boolean updateUserName(String email, String name) throws SQLException {
+		final boolean[] success = {false};
+		Db.executeTransaction((connection -> {
+			try(PreparedStatement statement = connection.prepareStatement("UPDATE users SET name = ? WHERE email = ?")) {
+				statement.setString(1, name);
+				statement.setString(2, email);
+				success[0] = statement.executeUpdate() > 0;
+			}
+			catch (SQLException sqle) {
+				Log.exception(email, List.of("SQL Exception in TableUsers.updateUserName", sqle.getMessage()));
 			}
 		}));
 		return success[0];

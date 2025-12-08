@@ -5,7 +5,7 @@ import com.lexivo.db.Db;
 import com.lexivo.schema.EmailConfirmationCodeData;
 import com.lexivo.util.HttpResponseStatus;
 import com.lexivo.util.JsonUtil;
-import com.lexivo.util.RequestDataCheck;
+import com.lexivo.util.RequestData;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class ConfirmEmailController extends Controller {
 	@Override
 	protected void post(HttpExchange exchange) throws IOException, SQLException {
 		@SuppressWarnings("unchecked")
-		Map<String, ?> requestBody = RequestDataCheck.getCheckedRequestBody(exchange, List.of("email", "confirmation_code"), Map.class);
+		Map<String, ?> requestBody = RequestData.getCheckedRequestBody(exchange, List.of("email", "confirmation_code"), Map.class);
 
 		if (requestBody == null) return;
 		String email = (String) requestBody.get("email");

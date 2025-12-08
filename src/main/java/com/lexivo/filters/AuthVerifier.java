@@ -34,7 +34,7 @@ public class AuthVerifier extends Filter {
 			denyAccessResponse(exchange, HttpResponseStatus.UNAUTHORIZED);
 			return;
 		}
-		if (JwtUtil.isMinimumAllowedRole(decoded, minimumRole)) {
+		if (!JwtUtil.isMinimumAllowedRole(decoded, minimumRole)) {
 			denyAccessResponse(exchange, HttpResponseStatus.FORBIDDEN);
 			return;
 		}

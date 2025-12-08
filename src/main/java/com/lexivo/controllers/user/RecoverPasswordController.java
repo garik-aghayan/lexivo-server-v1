@@ -4,7 +4,7 @@ import com.lexivo.controllers.Controller;
 import com.lexivo.db.Db;
 import com.lexivo.util.Email;
 import com.lexivo.util.Randomizer;
-import com.lexivo.util.RequestDataCheck;
+import com.lexivo.util.RequestData;
 import com.sun.net.httpserver.HttpExchange;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -21,7 +21,7 @@ public class RecoverPasswordController extends Controller {
 	@Override
 	protected void post(HttpExchange exchange) throws IOException, SQLException {
 		@SuppressWarnings("unchecked")
-		Map<String, ?> requestBody = RequestDataCheck.getCheckedRequestBody(exchange, List.of("email"), Map.class);
+		Map<String, ?> requestBody = RequestData.getCheckedRequestBody(exchange, List.of("email"), Map.class);
 
 		if (requestBody == null) return;
 		String email = (String) requestBody.get("email");
@@ -31,6 +31,6 @@ public class RecoverPasswordController extends Controller {
 
 		Email.sendRecoveredPassword(email, newPassword);
 
-		sendOkWithMessage(exchange, "Check your email");
+		sendOkResponse(exchange, "Check your email");
 	}
 }
