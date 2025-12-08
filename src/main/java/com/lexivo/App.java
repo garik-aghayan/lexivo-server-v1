@@ -5,6 +5,7 @@ import com.lexivo.routes.NotFoundRoute;
 import com.lexivo.routes.UserRoute;
 import com.lexivo.schema.Log;
 import com.sun.net.httpserver.HttpServer;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;

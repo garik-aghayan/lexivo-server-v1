@@ -8,14 +8,17 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 class Route {
-	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass, Filter[] filters) {
-		try {
-			Constructor<? extends Controller> controllerConstructor = controllerClass.getConstructor(String.class);
-			Controller controller = controllerConstructor.newInstance(basePath);
+	public Route(HttpServer server, String path, Class<? extends Controller> controllerClass, Filter[] filters, List<Object> constructorParams) {
+		Object[][] paramsAndParamClasses = getConstructorParamsAndParamClasses(path, constructorParams);
 
-			var context1 = server.createContext(basePath, controller);
+		try {
+			Constructor<? extends Controller> controllerConstructor = controllerClass.getConstructor((Class<?>[]) paramsAndParamClasses[1]);
+			Controller controller = controllerConstructor.newInstance(paramsAndParamClasses[0]);
+
+			var context1 = server.createContext(path, controller);
 			var context2 = server.createContext(context1.getPath() + "/", controller);
 
 			for (var filter : filters) {
@@ -31,7 +34,29 @@ class Route {
 		}
 	}
 
-	public Route(HttpServer server, String basePath, Class<? extends Controller> controllerClass) {
-		this(server, basePath, controllerClass, new Filter[]{});
+	public Route(HttpServer server, String path, Class<? extends Controller> controllerClass, Filter[] filters) {
+		this(server, path, controllerClass, filters, List.of());
+	}
+
+	public Route(HttpServer server, String path, Class<? extends Controller> controllerClass, List<Object> constructorParams) {
+		this(server, path, controllerClass, new Filter[]{}, constructorParams);
+	}
+
+	public Route(HttpServer server, String path, Class<? extends Controller> controllerClass) {
+		this(server, path, controllerClass, new Filter[]{}, List.of());
+	}
+
+	private Object[][] getConstructorParamsAndParamClasses(String path, List<Object> constructorParams) {
+		Object[] params = new Object[constructorParams.size() + 1];
+		Class<?>[] paramClasses = new Class[constructorParams.size() + 1];
+		params[0] = path;
+		paramClasses[0] = String.class;
+		for (int i = 0; i < constructorParams.size(); i++) {
+			var param = constructorParams.get(i);
+			params[i + 1] = param;
+			paramClasses[i + 1] = param.getClass();
+		}
+
+		return new Object[][]{params, paramClasses};
 	}
 }

@@ -22,7 +22,12 @@ public abstract class Controller implements HttpHandler {
 	@Override
 	public void handle(HttpExchange exchange) {
 		String reqMethod = exchange.getRequestMethod();
+		String uriPath = exchange.getRequestURI().getPath();
 		try {
+			if (!pathsEqual(path, uriPath)) {
+				sendRouteDoesNotExistResponse(exchange);
+				return;
+			}
 			switch (reqMethod) {
 				case HttpRequestMethod.GET -> get(exchange);
 				case HttpRequestMethod.POST -> post(exchange);
