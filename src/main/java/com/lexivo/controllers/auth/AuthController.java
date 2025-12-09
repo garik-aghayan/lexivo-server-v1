@@ -11,4 +11,8 @@ public abstract class AuthController {
 	public static Controller signup(String path) {
 		return new SignupController(path);
 	}
+
+	public static Controller refreshToken(String path) {
+		return new RefreshTokenController(path);
+	}
 }

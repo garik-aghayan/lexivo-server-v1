@@ -46,7 +46,7 @@ public class LoginController extends Controller {
 		long accessTokenValidMinutes = role == UserRole.ADMIN ? 15 : 5;
 		jsonMap.put(JwtUtil.KEY_ACCESS_TOKEN, JwtUtil.createHMAC256Token(email, role, accessTokenValidMinutes));
 		if (role == UserRole.USER) {
-			jsonMap.put(JwtUtil.KEY_REFRESH_TOKEN, JwtUtil.createHMAC256Token(email, role, DateAndTime.getMinutesInDays(7)));
+			jsonMap.put(JwtUtil.KEY_REFRESH_TOKEN, JwtUtil.createHMAC256Token(email, UserRole.USER, DateAndTime.getMinutesInDays(30)));
 		}
 		jsonMap.put("email", user.getEmail());
 		jsonMap.put("name", user.getName());
