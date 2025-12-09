@@ -16,15 +16,15 @@ public class TableLogs {
 
 
 	public List<Log> getLogs(Log.Category[] categories, String userEmail, long dateFrom, long dateTo) {
-		String categoryFilter = categories == null || categories.length == 0 ? "" : "category IN (?) AND ";
-		String userEmailFilter = userEmail == null ? "" : "user_email == ? AND ";
-		String createdAtFilter = "created_at > ? AND created_at < ?";
-		String sql = "SELECT * FROM email_confirmation_codes WHERE " + categoryFilter + " " + userEmailFilter + " " + createdAtFilter;
+		String categoryFilter = categories == null || categories.length == 0 ? "" : "category = ANY(?) AND ";
+		String userEmailFilter = userEmail == null ? "" : "user_email = ? AND ";
+		String createdAtFilter = "created_at >= ? AND created_at < ?";
+		String sql = "SELECT * FROM logs WHERE " + categoryFilter + " " + userEmailFilter + " " + createdAtFilter;
 
 		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 			int nextParamIndex = 1;
 			if (!categoryFilter.isEmpty()) {
-				Array sqlArray = connection.createArrayOf("SHORT_TEXT", categories);
+				Array sqlArray = connection.createArrayOf("SHORT_TEXT", Arrays.stream(categories).map(Enum::toString).toArray(String[]::new));
 				statement.setArray(nextParamIndex++, sqlArray);
 			}
 			if (!userEmailFilter.isEmpty()) {
@@ -60,18 +60,6 @@ public class TableLogs {
 		}
 	}
 
-	public List<Log> getLogs(Log.Category[] categories) {
-		return getLogs(categories, null, 0, System.currentTimeMillis());
-	}
-
-	public List<Log> getLogs(String userEmail) {
-		return getLogs(null, userEmail, 0, System.currentTimeMillis());
-	}
-
-	public List<Log> getLogs(long dateFrom, long dateTo) {
-		return getLogs(null, null, dateFrom, dateTo);
-	}
-
 	public void addLog(Log log) {
 		try {
 			Db.executeTransaction((connection -> {
@@ -79,7 +67,7 @@ public class TableLogs {
 					statement.setString(1, log.getCategory().toString());
 					statement.setString(2, log.getUserEmail());
 					statement.setLong(3, log.getCreatedAt());
-					statement.setArray(4, connection.createArrayOf("TEXT", log.getMessages()));
+					statement.setArray(4, connection.createArrayOf("SHORT_TEXT", log.getMessages()));
 					statement.execute();
 				}
 			}));

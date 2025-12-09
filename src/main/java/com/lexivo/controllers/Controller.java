@@ -46,7 +46,7 @@ public abstract class Controller implements HttpHandler {
 		}
 	}
 
-	protected void get(HttpExchange exchange) throws IOException, SQLException {
+	protected void get(HttpExchange exchange) throws IOException {
 		sendNotFoundResponse(exchange);
 	}
 
@@ -57,7 +57,7 @@ public abstract class Controller implements HttpHandler {
 	protected void put(HttpExchange exchange) throws IOException, SQLException {
 		sendNotFoundResponse(exchange);
 	}
-	protected void delete(HttpExchange exchange) throws IOException, SQLException {
+	protected void delete(HttpExchange exchange) throws IOException {
 		sendNotFoundResponse(exchange);
 	}
 

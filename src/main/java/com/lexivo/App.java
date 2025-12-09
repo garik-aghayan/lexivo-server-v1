@@ -1,11 +1,11 @@
 package com.lexivo;
 
 import com.lexivo.routes.AuthRoute;
+import com.lexivo.routes.LogsRoute;
 import com.lexivo.routes.NotFoundRoute;
 import com.lexivo.routes.UserRoute;
 import com.lexivo.schema.Log;
 import com.sun.net.httpserver.HttpServer;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -36,6 +36,7 @@ public class App {
     private static void initRoutes(HttpServer server) {
         new AuthRoute(BASE_URL).withServer(server);
         new UserRoute(BASE_URL).withServer(server);
+        new LogsRoute(BASE_URL).withServer(server);
         new NotFoundRoute().withServer(server);
     }
 }

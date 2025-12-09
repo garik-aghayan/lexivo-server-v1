@@ -87,6 +87,16 @@ public class Log {
 		exception(null, Arrays.stream(messages).toList());
 	}
 
+	@Override
+	public String toString() {
+		return "Log{" +
+				"createdAt=" + createdAt +
+				", category=" + category +
+				", messages=" + messages +
+				", userEmail='" + userEmail + '\'' +
+				'}';
+	}
+
 	public enum Category {
 		INFO,
 		NEW_USER,
