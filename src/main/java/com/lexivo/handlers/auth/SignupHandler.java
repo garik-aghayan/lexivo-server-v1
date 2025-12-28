@@ -13,6 +13,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @HttpRequestHandler(method = RequestMethod.POST, path = "/auth/signup")
 public class SignupHandler implements Handler {
@@ -26,8 +27,12 @@ public class SignupHandler implements Handler {
 		String email = (String) requestBody.get("email");
 		String password = (String) requestBody.get("password");
 
+
 		try {
-			if (!credentialsProvided(response, name, email, password)) return;
+			String[] missingData = ValidationUtil.getMissingStrings(new String[]{email, password, name}, List.of("Email is missing", "Password is missing", "Name is missing"));
+			if (missingData.length > 0) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, missingData);
+			}
 
 			User user = Db.users().getByEmail(email);
 			if (user != null) {
@@ -35,9 +40,9 @@ public class SignupHandler implements Handler {
 				return;
 			}
 
-			boolean passwordMeetsRequirements = PasswordUtil.doesPasswordMeetRequirements(password);
+			boolean passwordMeetsRequirements = ValidationUtil.isPasswordValid(password);
 			if (!passwordMeetsRequirements) {
-				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, PasswordUtil.PASSWORD_REQUIREMENTS);
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, ValidationUtil.PASSWORD_REQUIREMENTS);
 				return;
 			}
 
@@ -54,28 +59,9 @@ public class SignupHandler implements Handler {
 
 			StandardResponse.sendConfirmationCode(response, user);
 		}
-		catch (IOException | SQLException e) {
+		catch (Exception e) {
 			logger.exception(e, email, new String[]{e.getMessage()});
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}
-	}
-
-	private boolean credentialsProvided(Response response, String name, String email, String password) throws IOException {
-		if (email == null || email.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Email is missing");
-			return false;
-		}
-
-		if (name == null || name.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Name is missing");
-			return false;
-		}
-
-		if (password == null || password.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Password is missing");
-			return false;
-		}
-
-		return true;
 	}
 }

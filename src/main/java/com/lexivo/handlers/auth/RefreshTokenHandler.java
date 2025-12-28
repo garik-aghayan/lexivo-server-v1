@@ -37,7 +37,7 @@ public class RefreshTokenHandler implements Handler {
 					.status(HttpResponseStatus.OK)
 					.sendJson(Map.of(JwtUtil.KEY_ACCESS_TOKEN, accessToken));
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			logger.exception(e, new String[]{ e.getMessage() });
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}

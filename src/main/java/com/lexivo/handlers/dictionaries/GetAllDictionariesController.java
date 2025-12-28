@@ -8,7 +8,7 @@ import org.jandle.api.http.Response;
 
 import java.io.IOException;
 
-@HttpRequestHandler(method = RequestMethod.GET, path = "/dictionaries")
+@HttpRequestHandler(method = RequestMethod.GET, path = "/dict")
 public class GetAllDictionariesController implements Handler {
 	@Override
 	public void handle(Request request, Response response) throws IOException {

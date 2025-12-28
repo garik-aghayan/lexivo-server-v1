@@ -2,7 +2,6 @@ package com.lexivo.handlers.user;
 
 import com.lexivo.db.Db;
 import com.lexivo.logger.Logger;
-import com.lexivo.schema.Log;
 import com.lexivo.schema.User;
 import com.lexivo.util.*;
 
@@ -29,11 +28,15 @@ public class ChangePasswordHandler implements Handler {
 		String password = (String) requestBody.get("password");
 		String newPassword = (String) requestBody.get("newPassword");
 
-		if (!credentialsProvided(response, password, newPassword)) return;
-
-		User user = Db.users().getByEmail(email);
-
 		try {
+			String[] missingData = ValidationUtil.getMissingStrings(new String[]{email, password, newPassword}, List.of("Email is missing", "Password is missing", "New password is missing"));
+			if (missingData.length > 0) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, missingData);
+				return;
+			}
+
+			User user = Db.users().getByEmail(email);
+
 			if (user == null) {
 				StandardResponse.incorrectCredentials(response);
 			};
@@ -41,8 +44,8 @@ public class ChangePasswordHandler implements Handler {
 			AuthUtil.isUserPasswordCorrect(user, password);
 
 
-			if (!PasswordUtil.doesPasswordMeetRequirements(newPassword)) {
-				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, PasswordUtil.PASSWORD_REQUIREMENTS);
+			if (!ValidationUtil.isPasswordValid(newPassword)) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, ValidationUtil.PASSWORD_REQUIREMENTS);
 				return;
 			}
 
@@ -57,23 +60,9 @@ public class ChangePasswordHandler implements Handler {
 
 			response.sendStatus(HttpResponseStatus.OK);
 		}
-		catch (IOException | SQLException e) {
+		catch (Exception e) {
 			logger.exception(e, email, new String[]{ e.getMessage() });
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}
-	}
-
-	private boolean credentialsProvided(Response response, String password, String newPassword) throws IOException {
-		if (password == null || password.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Password is not provided");
-			return false;
-		}
-
-		if (newPassword == null || newPassword.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "New password is not provided");
-			return false;
-		}
-
-		return true;
 	}
 }

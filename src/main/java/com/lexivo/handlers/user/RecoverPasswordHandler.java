@@ -2,7 +2,6 @@ package com.lexivo.handlers.user;
 
 import com.lexivo.db.Db;
 import com.lexivo.logger.Logger;
-import com.lexivo.schema.Log;
 import com.lexivo.util.*;
 import org.jandle.api.annotations.HttpRequestHandler;
 import org.jandle.api.http.Handler;
@@ -13,6 +12,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @HttpRequestHandler(method = RequestMethod.POST, path = "/user/recover_password")
 public class RecoverPasswordHandler implements Handler {
@@ -24,9 +24,12 @@ public class RecoverPasswordHandler implements Handler {
 		String email = (String) requestBody.get("email");
 
 		try {
-			if (email == null || email.isBlank()) {
-				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Email is missing");
+			String[] missingData = ValidationUtil.getMissingStrings(new String[]{email}, List.of("Email is missing"));
+			if (missingData.length > 0) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, missingData);
+				return;
 			}
+
 			String newPassword = Randomizer.generateUserPassword();
 			String newPasswordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 			Db.users().updateUserPassword(email, newPasswordHash);
@@ -35,7 +38,7 @@ public class RecoverPasswordHandler implements Handler {
 
 			StandardResponse.jsonWithMessages(response, HttpResponseStatus.OK, "Check your email");
 		}
-		catch (IOException | SQLException e) {
+		catch (Exception e) {
 			logger.exception(e, email, new String[]{e.getMessage()});
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}

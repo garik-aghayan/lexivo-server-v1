@@ -13,6 +13,7 @@ import org.jandle.api.http.Response;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @HttpRequestHandler(method = RequestMethod.POST, path = "/auth/login")
@@ -23,12 +24,16 @@ public class UserLoginHandler implements Handler {
 	public void handle(Request request, Response response) throws IOException {
 		var requestBody = request.getBodyJson();
 		String email = (String) requestBody.get("email");
-		email = email == null ? null : email.trim();
 		String password = (String) requestBody.get("password");
-		try {
-			if (!credentialsProvided(email, password, response)) return;
 
-			User user = Db.users().getByEmail(email);
+		try {
+			String[] missingData = ValidationUtil.getMissingStrings(new String[]{email, password}, List.of("Email is missing", "Password is missing"));
+			if (missingData.length > 0) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, missingData);
+				return;
+			}
+
+			User user = Db.users().getByEmail(email.trim());
 
 			if (!AuthUtil.isUserPasswordCorrect(user, password)) {
 				StandardResponse.incorrectCredentials(response);
@@ -50,23 +55,9 @@ public class UserLoginHandler implements Handler {
 					.status(HttpResponseStatus.OK)
 					.sendJson(userData);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			logger.exception(e, email, new String[]{e.getMessage()});
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}
-	}
-
-	private boolean credentialsProvided(String email, String password, Response response) throws IOException {
-		if (email == null || email.isEmpty()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Email is not provided");
-			return false;
-		}
-
-		if (password == null || password.isBlank()) {
-			StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, "Password is not provided");
-			return false;
-		}
-
-		return true;
 	}
 }

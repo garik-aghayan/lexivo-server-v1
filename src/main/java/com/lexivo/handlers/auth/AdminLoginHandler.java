@@ -14,6 +14,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @HttpRequestHandler(method = RequestMethod.POST, path = "/auth/admin_login")
@@ -24,16 +25,18 @@ public class AdminLoginHandler implements Handler {
 	public void handle(Request request, Response response) throws IOException {
 		var requestBody = request.getBodyJson();
 		String email = (String) requestBody.get("email");
-		email = email == null ? null : email.trim();
 		String password = (String) requestBody.get("password");
 		String adminPassword = (String) requestBody.get("adminPassword");
 
 		try {
 			logger.warning(email, new String[]{"Admin login attempt"});
 
-			if (!credentialsProvided(email, password, adminPassword, response)) return;
+			String[] missingData = ValidationUtil.getMissingStrings(new String[]{email, password, adminPassword}, List.of("Email is missing", "Password is missing", "Admin password is missing"));
+			if (missingData.length > 0) {
+				StandardResponse.jsonWithMessages(response, HttpResponseStatus.BAD_REQUEST, missingData);
+			}
 
-			User user = Db.users().getByEmail(email);
+			User user = Db.users().getByEmail(email.trim());
 
 			if (!credentialsCorrect(user, password, adminPassword)) {
 				StandardResponse.incorrectCredentials(response);
@@ -57,7 +60,7 @@ public class AdminLoginHandler implements Handler {
 					.status(HttpResponseStatus.OK)
 					.sendJson(userData);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			logger.exception(e, email, new String[]{e.getMessage()});
 			response.sendStatus(HttpResponseStatus.SERVER_SIDE_ERROR);
 		}
