@@ -19,6 +19,10 @@ public class AuthVerifierFilter implements Filter {
 		this.minRole = minRole;
 	}
 
+	public AuthVerifierFilter() {
+		this.minRole = UserRole.USER;
+	}
+
 	@Override
 	public void doFilter(Request request, Response response, Chain filterChain) throws IOException {
 		List<String> authorization = request.getHeader("Authorization");

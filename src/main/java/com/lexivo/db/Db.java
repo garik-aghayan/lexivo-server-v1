@@ -8,6 +8,8 @@ public abstract class Db {
 	private static final TableUsers users = new TableUsers();
 	private static final TableEmailConfirmationCodes emailConfirmationCodes = new TableEmailConfirmationCodes();
 	private static final TableLogs logs = new TableLogs();
+	private static final TableLang lang = new TableLang();
+
 	public static Connection getDbConnection() throws SQLException {
 		final String url = System.getenv("DB_URL");
 		final String user = System.getenv("DB_USER");
@@ -45,5 +47,9 @@ public abstract class Db {
 
 	public static TableLogs logs() {
 		return logs;
+	}
+
+	public static TableLang lang() {
+		return lang;
 	}
 }

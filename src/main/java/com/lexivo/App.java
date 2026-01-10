@@ -6,9 +6,10 @@ import com.lexivo.handlers.auth.AdminLoginHandler;
 import com.lexivo.handlers.auth.RefreshTokenHandler;
 import com.lexivo.handlers.auth.SignupHandler;
 import com.lexivo.handlers.auth.UserLoginHandler;
-import com.lexivo.handlers.dictionaries.GetAllDictionariesController;
-import com.lexivo.handlers.dictionaries.GetDictionaryByIdController;
-import com.lexivo.handlers.logs.LogsHandler;
+import com.lexivo.handlers.dict.GetAllDictHandler;
+import com.lexivo.handlers.dict.GetDictByIdHandler;
+import com.lexivo.handlers.lang.GetAllLangHandler;
+import com.lexivo.handlers.logs.GetAllLogsHandler;
 import com.lexivo.handlers.user.ChangePasswordHandler;
 import com.lexivo.handlers.user.ChangeUserNameHandler;
 import com.lexivo.handlers.user.ConfirmEmailHandler;
@@ -69,36 +70,22 @@ public class App {
             new SignupHandler(),
             new RefreshTokenHandler(),
             new RecoverPasswordHandler(),
-            new ConfirmEmailHandler()
+            new ConfirmEmailHandler(),
+            new ChangePasswordHandler(),
+            new ChangeUserNameHandler(),
+            new GetAllDictHandler(),
+            new GetDictByIdHandler()
         );
 
-        // Change password
+        // Get all logs
         app.registerHandler(
-                new ChangePasswordHandler(),
-                new AuthVerifierFilter(UserRole.USER)
+                new GetAllLogsHandler(),
+                new AuthVerifierFilter(UserRole.ADMIN)
         );
 
-        // Change name
+        // Get all lang list
         app.registerHandler(
-                new ChangeUserNameHandler(),
-                new AuthVerifierFilter(UserRole.USER)
-        );
-
-        // Get all dictionaries
-        app.registerHandler(
-                new GetAllDictionariesController(),
-                new AuthVerifierFilter(UserRole.USER)
-        );
-
-        // Get dictionary by id
-        app.registerHandler(
-                new GetDictionaryByIdController(),
-                new AuthVerifierFilter(UserRole.USER)
-        );
-
-        // Get logs
-        app.registerHandler(
-                new LogsHandler(),
+                new GetAllLangHandler(),
                 new AuthVerifierFilter(UserRole.ADMIN)
         );
     }

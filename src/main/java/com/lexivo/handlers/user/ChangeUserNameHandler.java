@@ -1,10 +1,12 @@
 package com.lexivo.handlers.user;
 
 import com.lexivo.db.Db;
+import com.lexivo.filters.AuthVerifierFilter;
 import com.lexivo.logger.Logger;
 import com.lexivo.util.HttpResponseStatus;
 import com.lexivo.util.StandardResponse;
 import com.lexivo.util.ValidationUtil;
+import org.jandle.api.annotations.HttpRequestFilters;
 import org.jandle.api.annotations.HttpRequestHandler;
 import org.jandle.api.http.Handler;
 import org.jandle.api.http.Request;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @HttpRequestHandler(method = RequestMethod.PUT, path = "/user/change_name")
+@HttpRequestFilters({ AuthVerifierFilter.class })
 public class ChangeUserNameHandler implements Handler {
 	private final Logger logger = new Logger();
 

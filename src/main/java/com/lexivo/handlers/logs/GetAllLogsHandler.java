@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @HttpRequestHandler(method = RequestMethod.GET, path = "/logs")
-public class LogsHandler implements Handler {
+public class GetAllLogsHandler implements Handler {
 	private final Logger logger = new Logger();
 	@Override
 	public void handle(Request request, Response response) throws IOException {
