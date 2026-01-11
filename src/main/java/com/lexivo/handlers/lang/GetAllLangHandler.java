@@ -19,7 +19,7 @@ public class GetAllLangHandler implements Handler {
 	public void handle(Request request, Response response) throws IOException {
 		try {
 			var langList = Db.lang().getAll();
-			response.status(200).sendJson(langList);
+			response.status(HttpResponseStatus.OK).sendJson(langList);
 		}
 		catch (Exception e) {
 			logger.exception(e, new String[]{e.getMessage()});

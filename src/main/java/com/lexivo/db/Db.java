@@ -9,6 +9,9 @@ public abstract class Db {
 	private static final TableEmailConfirmationCodes emailConfirmationCodes = new TableEmailConfirmationCodes();
 	private static final TableLogs logs = new TableLogs();
 	private static final TableLang lang = new TableLang();
+	private static final TableDict dict = new TableDict();
+	private static final TableWord word = new TableWord();
+	private static final TableGrammar grammar = new TableGrammar();
 
 	public static Connection getDbConnection() throws SQLException {
 		final String url = System.getenv("DB_URL");
@@ -51,5 +54,16 @@ public abstract class Db {
 
 	public static TableLang lang() {
 		return lang;
+	}
+
+	public static TableDict dict() {
+		return dict;
+	}
+
+	public static TableWord word() {
+		return word;
+	}
+	public static TableGrammar grammar() {
+		return grammar;
 	}
 }

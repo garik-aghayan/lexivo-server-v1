@@ -15,9 +15,7 @@ public class TableLang {
 	private final Logger logger = new Logger();
 
 	public List<Lang> getAll() {
-		String sql = "SELECT * FROM lang";
-
-		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement("SELECT * FROM lang")) {
 			try (ResultSet resultSet = statement.executeQuery()) {
 				List<Lang> langList = new ArrayList<>();
 

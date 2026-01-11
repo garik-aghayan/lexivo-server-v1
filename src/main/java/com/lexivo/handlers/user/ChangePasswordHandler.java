@@ -41,7 +41,7 @@ public class ChangePasswordHandler implements Handler {
 
 			if (user == null) {
 				StandardResponse.incorrectCredentials(response);
-			};
+			}
 
 			AuthUtil.isUserPasswordCorrect(user, password);
 

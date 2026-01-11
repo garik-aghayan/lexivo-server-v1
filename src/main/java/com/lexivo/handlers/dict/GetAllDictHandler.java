@@ -1,6 +1,7 @@
 package com.lexivo.handlers.dict;
 
 import com.lexivo.filters.AuthVerifierFilter;
+import com.lexivo.util.HttpResponseStatus;
 import org.jandle.api.annotations.HttpRequestFilters;
 import org.jandle.api.annotations.HttpRequestHandler;
 import org.jandle.api.http.Handler;
@@ -16,6 +17,6 @@ public class GetAllDictHandler implements Handler {
 	@Override
 	public void handle(Request request, Response response) throws IOException {
 		//		TODO: Implement
-		response.sendStatus(200);
+		response.sendStatus(HttpResponseStatus.OK);
 	}
 }
