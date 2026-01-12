@@ -3,6 +3,7 @@ package com.lexivo.db;
 import com.lexivo.exceptions.UnauthorizedAccessException;
 import com.lexivo.logger.Logger;
 import com.lexivo.schema.appschema.Word;
+import com.lexivo.util.ReceivedDataUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,10 +43,11 @@ public class TableWord {
 		}
 	}
 
-	public List<Word> getAll(String dictId) {
+	public List<Word> getAll(String dictId, String userEmail) {
 		String sql = "SELECT * FROM word WHERE " + COL_DICT_ID + " = ?";
 		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, dictId);
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId);
+			statement.setString(1, joinedId);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
 				List<Word> words = new ArrayList<>();
@@ -63,8 +65,10 @@ public class TableWord {
 					String past2 = resultSet.getString(COL_PAST2);
 					String desc = resultSet.getString(COL_DESC);
 					String descDetails = resultSet.getString(COL_DESC_DETAILS);
+
+					String[] idList = ReceivedDataUtil.separateJoinedId(id);
 					words.add(new Word(
-							id,
+							idList[idList.length - 1],
 							type,
 							level,
 							gender,
@@ -88,10 +92,11 @@ public class TableWord {
 		}
 	}
 
-	public Word getById(String wordId) {
+	public Word getById(String wordId, String dictId, String userEmail) {
 		String sql = "SELECT * FROM word WHERE " + COL_ID + " = ?";
 		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-			statement.setString(1, wordId);
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId, wordId);
+			statement.setString(1, joinedId);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
 				if (!resultSet.next()) return null;
@@ -109,8 +114,9 @@ public class TableWord {
 				String desc = resultSet.getString(COL_DESC);
 				String descDetails = resultSet.getString(COL_DESC_DETAILS);
 
+				String[] idList = ReceivedDataUtil.separateJoinedId(id);
 				return new Word(
-						id,
+						idList[idList.length - 1],
 						type,
 						level,
 						gender,
@@ -149,12 +155,13 @@ public class TableWord {
 					COL_DESC_DETAILS +
 				") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId, word.id);
 			if (!Db.dict().isUserAuthorized(dictId, userEmail)) throw new UnauthorizedAccessException();
 
 			Db.executeTransaction((connection -> {
 				try(PreparedStatement statement = connection.prepareStatement(sql)) {
 					int index = 1;
-					statement.setString(index++, word.id);
+					statement.setString(index++, joinedId);
 					statement.setString(index++, dictId);
 					statement.setString(index++, userEmail);
 					statement.setString(index++, word.type);
@@ -178,7 +185,7 @@ public class TableWord {
 		}
 	}
 
-	public void update(Word word, String userEmail) throws UnauthorizedAccessException {
+	public void update(Word word, String dictId, String userEmail) throws UnauthorizedAccessException {
 		String sql = "UPDATE word SET " +
 				COL_TYPE + "= ?," +
 				COL_LEVEL + "= ?," +
@@ -193,7 +200,8 @@ public class TableWord {
 				COL_DESC_DETAILS + "= ?" + word.descDetails +
 				" WHERE " + COL_ID + "= ?";
 		try {
-			if (!isUserAuthorized(word.id, userEmail)) throw new UnauthorizedAccessException();
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId, word.id);
+			if (!isUserAuthorized(joinedId, userEmail)) throw new UnauthorizedAccessException();
 
 			Db.executeTransaction((connection -> {
 				try(PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -209,7 +217,7 @@ public class TableWord {
 					statement.setString(index++, word.past2);
 					statement.setString(index++, word.desc);
 					statement.setString(index++, word.descDetails);
-					statement.setString(index, word.id);
+					statement.setString(index, joinedId);
 					statement.execute();
 				}
 			}));
@@ -220,13 +228,14 @@ public class TableWord {
 		}
 	}
 
-	public void delete(String wordId, String userEmail) throws UnauthorizedAccessException {
+	public void delete(String wordId, String dictId, String userEmail) throws UnauthorizedAccessException {
 		try {
-			if (!isUserAuthorized(wordId, userEmail)) throw new UnauthorizedAccessException();
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId, wordId);
+			if (!isUserAuthorized(joinedId, userEmail)) throw new UnauthorizedAccessException();
 
 			Db.executeTransaction((connection -> {
 				try(PreparedStatement statement = connection.prepareStatement("DELETE FROM word WHERE id = ?")) {
-					statement.setString(1, wordId);
+					statement.setString(1, joinedId);
 					statement.execute();
 				}
 			}));
@@ -237,16 +246,17 @@ public class TableWord {
 		}
 	}
 
-	public void updateCountdown(int countdownCount, String wordId, String userEmail) throws UnauthorizedAccessException {
+	public void updateCountdown(int countdownCount, String wordId, String dictId, String userEmail) throws UnauthorizedAccessException {
 		String sql = "UPDATE word SET " + COL_PRACTICE_COUNTDOWN + " = ? WHERE id = ?";
 
 		try {
-			if (!isUserAuthorized(wordId, userEmail)) throw new UnauthorizedAccessException();
+			String joinedId = ReceivedDataUtil.createJoinedId(userEmail, dictId, wordId);
+			if (!isUserAuthorized(joinedId, userEmail)) throw new UnauthorizedAccessException();
 
 			Db.executeTransaction((connection -> {
 				try(PreparedStatement statement = connection.prepareStatement(sql)) {
 					statement.setInt(1, countdownCount);
-					statement.setString(2, wordId);
+					statement.setString(2, joinedId);
 					statement.execute();
 				}
 			}));

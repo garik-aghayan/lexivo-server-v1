@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.lexivo.logger.Logger;
 import com.lexivo.schema.appschema.GrammarSubmenu;
+import com.lexivo.util.ReceivedDataUtil;
 
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -26,7 +27,6 @@ public class TableGrammarSubmenu {
 	public List<GrammarSubmenu> getByGrammarId(String grammarId) {
 		String sql = "SELECT * FROM grammar_submenu WHERE " + COL_GRAMMAR_ID + " = ?";
 		try (Connection connection = Db.getDbConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-
 			statement.setString(1, grammarId);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
@@ -58,6 +58,67 @@ public class TableGrammarSubmenu {
 		catch (Exception e) {
 			logger.exception(e, new String[]{"Exception in TableGrammarSubmenu.getByGrammarId", e.getMessage()});
 			return List.of();
+		}
+	}
+
+	public void add(List<GrammarSubmenu> grammarSubmenuList, String grammarId, String userEmail) {
+		String sql = "INSERT INTO grammar_submenu ("+
+				COL_ID +"," +
+				COL_GRAMMAR_ID + "," +
+				COL_USER_EMAIL + "," +
+				COL_HEADER + "," +
+				COL_EXPLANATIONS_JSON + "," +
+				COL_EXAMPLES_JSON +
+				") VALUES(?,?,?,?,?,?)";
+		try {
+			Db.executeTransaction((connection -> {
+				try(PreparedStatement statement = connection.prepareStatement(sql)) {
+					for (var grammarSubmenu : grammarSubmenuList) {
+						int index = 1;
+						statement.setString(index++, ReceivedDataUtil.createJoinedId(grammarId, grammarSubmenu.id));
+						statement.setString(index++, grammarId);
+						statement.setString(index++, userEmail);
+						statement.setString(index++, grammarSubmenu.header);
+						statement.setString(index++, gson.toJson(grammarSubmenu.getExplanations()));
+						statement.setString(index, gson.toJson(grammarSubmenu.getExamples()));
+
+						statement.addBatch();
+					}
+
+					statement.executeBatch();
+				}
+			}));
+		}
+		catch (Exception e) {
+			logger.exception(e, userEmail, new String[]{"Exception in TableGrammarSubmenu.add"});
+		}
+	}
+
+	public void update(List<GrammarSubmenu> grammarSubmenuList, String grammarId) {
+		String sql = "UPDATE grammar_submenu SET " +
+				COL_HEADER + "= ?," +
+				COL_EXPLANATIONS_JSON + "= ?," +
+				COL_EXAMPLES_JSON + "= ?" +
+				" WHERE " + COL_ID + "= ?";
+		try {
+			Db.executeTransaction((connection -> {
+				try(PreparedStatement statement = connection.prepareStatement(sql)) {
+					for (var grammarSubmenu : grammarSubmenuList) {
+						int index = 1;
+						statement.setString(index++, grammarSubmenu.header);
+						statement.setString(index++, gson.toJson(grammarSubmenu.getExplanations()));
+						statement.setString(index++, gson.toJson(grammarSubmenu.getExamples()));
+						statement.setString(index, ReceivedDataUtil.createJoinedId(grammarId, grammarSubmenu.id));
+
+						statement.addBatch();
+					}
+
+					statement.executeBatch();
+				}
+			}));
+		}
+		catch (Exception e) {
+			logger.exception(e, new String[]{"Exception in TableGrammarSubmenu.update"});
 		}
 	}
 }
