@@ -97,8 +97,6 @@ public class TableDict {
 				COL_LANG + "," +
 				") VALUES(?,?,?)";
 		try {
-
-
 			Db.executeTransaction((connection -> {
 				try(PreparedStatement statement = connection.prepareStatement(sql)) {
 					for (var dict : dictList) {
@@ -115,6 +113,9 @@ public class TableDict {
 						statement.addBatch();
 					}
 					statement.executeBatch();
+				}
+				catch (UnauthorizedAccessException ignore) {
+					// Cannot be thrown
 				}
 			}));
 		}

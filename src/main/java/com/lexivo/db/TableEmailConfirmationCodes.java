@@ -6,7 +6,6 @@ import com.lexivo.schema.EmailConfirmationCodeData;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class TableEmailConfirmationCodes {
 	private static final String COL_EMAIL = "email";

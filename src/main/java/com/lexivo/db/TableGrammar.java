@@ -4,7 +4,6 @@ import com.lexivo.exceptions.UnauthorizedAccessException;
 import com.lexivo.logger.Logger;
 import com.lexivo.schema.appschema.Grammar;
 import com.lexivo.schema.appschema.GrammarSubmenu;
-import com.lexivo.schema.appschema.Word;
 import com.lexivo.util.ReceivedDataUtil;
 
 import java.sql.Connection;

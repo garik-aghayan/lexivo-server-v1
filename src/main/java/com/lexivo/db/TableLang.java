@@ -1,10 +1,7 @@
 package com.lexivo.db;
 
 import com.lexivo.logger.Logger;
-import com.lexivo.schema.appschema.Grammar;
 import com.lexivo.schema.appschema.Lang;
-import com.lexivo.schema.appschema.Word;
-import com.lexivo.util.ReceivedDataUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
